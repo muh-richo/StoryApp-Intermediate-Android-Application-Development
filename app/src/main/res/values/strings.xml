@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Story App</string>
+
+    <string name="login">Login</string>
+    <string name="enter_email_password">Enter your email and password</string>
+    <string name="email">Email</string>
+    <string name="invalid_email">Incorrect Email format</string>
+    <string name="password">Password</string>
+    <string name="invalid_password">Password must not be less than 8 characters</string>
+    <string name="name">Full Name</string>
+    <string name="empty_form">Please fill in the form fields</string>
+    <string name="register_success">Register Success! Please Login again with your account!</string>
+    <string name="already_taken">Register Error: Email is already taken</string>
+    <string name="invalid_form">Please fill in the form data according to the requirements</string>
+    <string name="register">Sign Up</string>
+
+    <string name="translate">Translate</string>
+    <string name="logout">Logout</string>
+    <string name="image_story">Image</string>
+    <string name="name_story">Name</string>
+    <string name="desc_story">Description</string>
+    <string name="created_at_story">20 May 2024</string>
+    <string name="back">Back Button</string>
+
+    <string name="camera">Camera</string>
+    <string name="gallery">Galery</string>
+    <string name="upload">Upload</string>
+    <string name="empty_form_upload">Fill in the data first</string>
+    <string name="add_story">Add Story</string>
+    <string name="upload_success">Upload Success!</string>
+
+</resources>

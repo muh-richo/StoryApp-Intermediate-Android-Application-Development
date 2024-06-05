@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Aplikasi Story</string>
+
+    <string name="login">Masuk</string>
+    <string name="enter_email_password">Masukkan Email dan Password anda</string>
+    <string name="email" >Email</string>
+    <string name="invalid_email">Format Email Salah!</string>
+    <string name="password">Password</string>
+    <string name="invalid_password">Password harus lebih dari 8 karakter</string>
+    <string name="name">Nama Lengkap</string>
+    <string name="empty_form">Silahkan isi data form terlebih dahulu</string>
+    <string name="register_success">Daftar akun Berhasil! Silahkan Masuk dengan akun anda!</string>
+    <string name="already_taken">Daftar Gagal: Email sudah terdaftar</string>
+    <string name="invalid_form">Silahkan isi data formulir sesuai ketentuan</string>
+    <string name="register">Daftar</string>
+
+    <string name="translate">Terjemahan</string>
+    <string name="logout">Keluar</string>
+    <string name="image_story">Gambar</string>
+    <string name="name_story">Nama</string>
+    <string name="desc_story">Deskripsi</string>
+    <string name="created_at_story">20 Mei 2024</string>
+    <string name="back">Tombol Kembali</string>
+
+    <string name="camera">Kamera</string>
+    <string name="gallery">Galeri</string>
+    <string name="upload">Unggah</string>
+    <string name="empty_form_upload">Silahkan lengkapi data dahulu</string>
+    <string name="add_story">Tambah Story</string>
+    <string name="upload_success">Unggah Berhasil!</string>
+
+</resources>
