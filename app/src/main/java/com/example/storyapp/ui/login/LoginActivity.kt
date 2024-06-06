@@ -13,16 +13,21 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.storyapp.ui.home.HomeActivity
 import com.example.storyapp.R
-import com.example.storyapp.data.local.User
-import com.example.storyapp.data.local.UserPreferences
+import com.example.storyapp.data.local.preference.User
+import com.example.storyapp.data.local.preference.UserPreferences
 import com.example.storyapp.databinding.ActivityLoginBinding
+import com.example.storyapp.ui.ViewModelFactory
 import com.example.storyapp.ui.register.RegisterActivity
-import com.example.storyapp.utils.isValidEmail
+import com.example.storyapp.data.remote.Result
+
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
-    private val viewModel: LoginViewModel by viewModels()
+    private val viewModel by viewModels<LoginViewModel> {
+        ViewModelFactory.getInstance(this)
+    }
+
     private var userModel: User = User()
     private lateinit var userPreferences: UserPreferences
 
@@ -38,6 +43,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         userPreferences = UserPreferences(this)
+        userModel = User()
 
         if (userPreferences.isLoggedIn()) {
             val intent = Intent(this, HomeActivity::class.java)
@@ -46,18 +52,14 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        viewModel.isLoading.observe(this) {
-            showLoading(it)
-        }
-
         playAnimation()
 
-        login()
-        register()
-
-        viewModel.errorMessage.observe(this) { errorMessage ->
-            if (errorMessage.isNotEmpty()) {
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        binding.apply {
+            btnLogin.setOnClickListener {
+                login()
+            }
+            btnRegister.setOnClickListener {
+                register()
             }
         }
     }
@@ -66,30 +68,45 @@ class LoginActivity : AppCompatActivity() {
         val edLoginEmail = binding.edLoginEmail.text
         val edLoginPassword = binding.edLoginPassword.text
 
-        binding.btnLogin.setOnClickListener {
-            viewModel.login(edLoginEmail.toString(), edLoginPassword.toString())
+        viewModel.login(
+            edLoginEmail.toString(),
+            edLoginPassword.toString()
+        ).observe(this) { result ->
+            if (result != null) {
+                when (result) {
+                    is Result.Loading -> {
+                        binding.progressBar.visibility = View.VISIBLE
+                    }
 
-            viewModel.isSuccess.observe(this) {
-                if (it) {
-                    userPreferences.setLoggedIn(true)
-                    val intent = Intent(this, HomeActivity::class.java)
-                    startActivity(intent)
-                    finish()
+                    is Result.Success -> {
+                        binding.progressBar.visibility = View.GONE
+                        val response = result.data
+                        if (response.error == true) {
+                            showToast(response.message)
+                        } else {
+                            val loginResult = response.loginResult
+                            userModel.token = loginResult?.token
+                            userPreferences.setLoggedIn(true)
+                            userPreferences.setUser(userModel)
+                            val intent = Intent(this, HomeActivity::class.java)
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+
+                    is Result.Error -> {
+                        binding.progressBar.visibility = View.GONE
+
+                        showToast(result.error)
+                    }
                 }
-            }
-
-            viewModel.loginResult.observe(this) { result ->
-                userModel.token = result.loginResult?.token
-                userPreferences.setUser(userModel)
             }
         }
     }
 
     private fun register() {
-        binding.btnRegister.setOnClickListener {
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
-        }
+        val intent = Intent(this, RegisterActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onBackPressed() {
@@ -97,16 +114,7 @@ class LoginActivity : AppCompatActivity() {
         finishAffinity()
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility =
-            if (isLoading) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-    }
-
-    private fun showToast(message: Int) {
+    private fun showToast(message: String?) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 

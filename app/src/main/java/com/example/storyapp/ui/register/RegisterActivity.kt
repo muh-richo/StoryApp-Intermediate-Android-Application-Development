@@ -13,13 +13,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.storyapp.R
 import com.example.storyapp.databinding.ActivityRegisterBinding
+import com.example.storyapp.ui.ViewModelFactory
 import com.example.storyapp.ui.login.LoginActivity
 import com.example.storyapp.utils.isValidEmail
+import com.example.storyapp.data.remote.Result
+
 
 class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
-    private val viewModel: RegisterViewModel by viewModels()
+    private val viewModel by viewModels<RegisterViewModel> {
+        ViewModelFactory.getInstance(this)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,19 +37,11 @@ class RegisterActivity : AppCompatActivity() {
             insets
         }
 
-        viewModel.isLoading.observe(this) {
-            showLoading(it)
-        }
-
         playAnimation()
 
-        register()
-
-        viewModel.errorMessage.observe(this) { errorMessage ->
-            if (errorMessage.isNotEmpty()) {
-                if (errorMessage == "Register Error : Email is already taken") {
-                    Toast.makeText(this, R.string.already_taken, Toast.LENGTH_SHORT).show()
-                }
+        binding.apply {
+            btnRegister.setOnClickListener {
+                register()
             }
         }
     }
@@ -54,23 +51,36 @@ class RegisterActivity : AppCompatActivity() {
         val edRegisterEmail = binding.edRegisterEmail.text
         val edRegisterPassword = binding.edRegisterPassword.text
 
-        binding.btnRegister.setOnClickListener {
-            if (edRegisterName!!.isEmpty() || edRegisterEmail!!.isEmpty() || edRegisterPassword!!.isEmpty()) {
-                showToast(R.string.empty_form)
-            } else if (!isValidEmail(edRegisterEmail.toString()) || edRegisterPassword.length < 8) {
-                showToast(R.string.invalid_form)
-            } else {
-                viewModel.register(
-                    edRegisterName.toString(),
-                    edRegisterEmail.toString(),
-                    edRegisterPassword.toString()
-                )
+        if (edRegisterName!!.isEmpty() || edRegisterEmail!!.isEmpty() || edRegisterPassword!!.isEmpty()) {
+            showToast(R.string.empty_form)
+        } else if (!isValidEmail(edRegisterEmail.toString()) || edRegisterPassword.length < 8) {
+            showToast(R.string.invalid_form)
+        } else {
+            viewModel.register(
+                edRegisterName.toString(),
+                edRegisterEmail.toString(),
+                edRegisterPassword.toString()
+            ).observe(this) { result ->
+                if (result != null) {
+                    when (result) {
+                        is Result.Loading -> {
+                            binding.progressBar.visibility = View.VISIBLE
+                        }
 
-                viewModel.isSuccess.observe(this) {
-                    if (it) {
-                        val intent = Intent(this, LoginActivity::class.java)
-                        startActivity(intent)
-                        showToast(R.string.register_success)
+                        is Result.Success -> {
+                            binding.progressBar.visibility = View.GONE
+
+                            showToast(R.string.register_success)
+
+                            val intent = Intent(this, LoginActivity::class.java)
+                            startActivity(intent)
+                        }
+
+                        is Result.Error -> {
+                            binding.progressBar.visibility = View.GONE
+
+                            showToast(result.error)
+                        }
                     }
                 }
             }
@@ -97,16 +107,11 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility =
-            if (isLoading) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
+    private fun showToast(message: Int) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    private fun showToast(message: Int) {
+    private fun showToast(message: String?) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

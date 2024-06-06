@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
+import androidx.test.espresso.idling.CountingIdlingResource
 import com.example.storyapp.BuildConfig
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -92,4 +93,30 @@ fun File.reduceFileImage(): File {
     } while (streamLength > MAXIMAL_SIZE)
     bitmap?.compress(Bitmap.CompressFormat.JPEG, compressQuality, FileOutputStream(file))
     return file
+}
+
+object EspressoIdlingResource {
+    private const val RESOURCE = "GLOBAL"
+
+    @JvmField
+    val countingIdlingResource = CountingIdlingResource(RESOURCE)
+
+    fun increment() {
+        countingIdlingResource.increment()
+    }
+
+    fun decrement() {
+        if (!countingIdlingResource.isIdleNow) {
+            countingIdlingResource.decrement()
+        }
+    }
+}
+
+inline fun <T> wrapEspressoIdlingResource(function: () -> T): T {
+    EspressoIdlingResource.increment()
+    return try {
+        function()
+    } finally {
+        EspressoIdlingResource.decrement()
+    }
 }

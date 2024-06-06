@@ -117,6 +117,25 @@
             android:inputType="textMultiLine" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <Switch
+        android:id="@+id/switch_share_loc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="10dp"
+        android:trackTint="@color/blue_300"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/input_desc"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_share_loc"
+        app:layout_constraintBottom_toTopOf="@+id/btn_upload"
+        app:layout_constraintStart_toEndOf="@+id/switch_share_loc"
+        app:layout_constraintTop_toBottomOf="@+id/input_desc" />
+
     <Button
         android:id="@+id/btn_upload"
         android:layout_width="match_parent"
@@ -125,7 +144,7 @@
         android:textColor="@color/white"
         android:backgroundTint="@color/blue_700"
         android:textAllCaps="true"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="45dp"
         android:layout_marginHorizontal="20dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/input_desc"

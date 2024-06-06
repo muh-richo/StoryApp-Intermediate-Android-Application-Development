@@ -29,5 +29,8 @@
     <string name="empty_form_upload">Silahkan lengkapi data dahulu</string>
     <string name="add_story">Tambah Story</string>
     <string name="upload_success">Unggah Berhasil!</string>
+    <string name="maps">Peta</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="add_share_loc">Bagikan lokasi anda</string>
 
 </resources>

@@ -29,5 +29,8 @@
     <string name="empty_form_upload">Fill in the data first</string>
     <string name="add_story">Add Story</string>
     <string name="upload_success">Upload Success!</string>
+    <string name="maps">Maps</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <string name="add_share_loc">Share your location</string>
 
 </resources>

@@ -12,18 +12,23 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.storyapp.R
-import com.example.storyapp.data.local.User
-import com.example.storyapp.data.local.UserPreferences
+import com.example.storyapp.adapter.StoryAdapter
+import com.example.storyapp.data.local.preference.User
+import com.example.storyapp.data.local.preference.UserPreferences
 import com.example.storyapp.data.remote.response.ListStoryItem
 import com.example.storyapp.databinding.ActivityHomeBinding
+import com.example.storyapp.ui.ViewModelFactory
 import com.example.storyapp.ui.addstory.AddStoryActivity
 import com.example.storyapp.ui.detail.DetailStoryActivity
 import com.example.storyapp.ui.login.LoginActivity
+import com.example.storyapp.ui.maps.MapsActivity
 
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityHomeBinding
-    private val viewModel: HomeViewModel by viewModels()
+    private val viewModel by viewModels<HomeViewModel> {
+        ViewModelFactory.getInstance(this)
+    }
 
     private lateinit var userModel: User
     private lateinit var userPreferences: UserPreferences
@@ -43,33 +48,30 @@ class HomeActivity : AppCompatActivity() {
         userPreferences = UserPreferences(this)
         userModel = userPreferences.getUser()
 
-        viewModel.getStories(userModel.token!!)
-
         topBar()
 
-        viewModel.isLoading.observe(this) {
-            showLoading(it)
+        binding.apply {
+            fabAddStory.setOnClickListener {
+                addStory()
+            }
         }
-
-        addStory()
     }
 
     override fun onResume() {
         super.onResume()
 
-        viewModel.getStories(userModel.token!!)
-
-        viewModel.listStory.observe(this) {
-            getStoryData(it)
-        }
+        getStoryData(userModel)
     }
 
-    private fun getStoryData(story: List<ListStoryItem>) {
+    private fun getStoryData(userModel: User) {
         val layoutInflater = LinearLayoutManager(this)
         binding.rvStory.layoutManager = layoutInflater
 
-        val adapter = StoryAdapter(story)
-        adapter.submitList(story)
+        val adapter = StoryAdapter()
+        viewModel.getStory("Bearer ${userModel.token}").observe(this) { result ->
+            binding.progressBar.visibility = View.GONE
+            adapter.submitData(lifecycle, result)
+        }
         binding.rvStory.adapter = adapter
 
         adapter.setOnItemClickCallBack(object: StoryAdapter.OnItemClickCallBack {
@@ -100,6 +102,11 @@ class HomeActivity : AppCompatActivity() {
                     logout()
                     true
                 }
+                R.id.maps -> {
+                    val intent = Intent(this, MapsActivity::class.java)
+                    startActivity(intent)
+                    true
+                }
                 else -> false
             }
         }
@@ -115,23 +122,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun addStory() {
-        binding.fabAddStory.setOnClickListener {
-            val intent = Intent(this, AddStoryActivity::class.java)
-            startActivity(intent)
-        }
+        val intent = Intent(this, AddStoryActivity::class.java)
+        startActivity(intent)
     }
 
     override fun onBackPressed() {
         super.onBackPressed()
         finishAffinity()
-    }
-
-    private fun showLoading(isLoading: Boolean) {
-        binding.progressBar.visibility =
-            if (isLoading) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
     }
 }
