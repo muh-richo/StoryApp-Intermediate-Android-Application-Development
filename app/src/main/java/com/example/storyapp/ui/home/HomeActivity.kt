@@ -2,6 +2,7 @@ package com.example.storyapp.ui.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.provider.Settings
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.storyapp.R
 import com.example.storyapp.adapter.StoryAdapter
@@ -22,6 +24,7 @@ import com.example.storyapp.ui.addstory.AddStoryActivity
 import com.example.storyapp.ui.detail.DetailStoryActivity
 import com.example.storyapp.ui.login.LoginActivity
 import com.example.storyapp.ui.maps.MapsActivity
+import kotlinx.coroutines.launch
 
 class HomeActivity : AppCompatActivity() {
 
@@ -32,6 +35,8 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var userModel: User
     private lateinit var userPreferences: UserPreferences
+
+    private var recyclerViewState: Parcelable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,24 +60,35 @@ class HomeActivity : AppCompatActivity() {
                 addStory()
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
 
         getStoryData(userModel)
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.rvStory.layoutManager?.onRestoreInstanceState(recyclerViewState)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        recyclerViewState = binding.rvStory.layoutManager?.onSaveInstanceState()
+    }
+
     private fun getStoryData(userModel: User) {
-        val layoutInflater = LinearLayoutManager(this)
-        binding.rvStory.layoutManager = layoutInflater
+        val layoutManager = LinearLayoutManager(this)
+        binding.rvStory.layoutManager = layoutManager
 
         val adapter = StoryAdapter()
-        viewModel.getStory("Bearer ${userModel.token}").observe(this) { result ->
-            binding.progressBar.visibility = View.GONE
-            adapter.submitData(lifecycle, result)
-        }
         binding.rvStory.adapter = adapter
+
+        lifecycleScope.launch {
+            viewModel.storyPagingData.observe(this@HomeActivity) { pagingData ->
+                binding.progressBar.visibility = View.GONE
+                adapter.submitData(lifecycle, pagingData)
+            }
+        }
+
+        viewModel.getStory("Bearer ${userModel.token}")
 
         adapter.setOnItemClickCallBack(object: StoryAdapter.OnItemClickCallBack {
             override fun onItemClicked(data: ListStoryItem) {

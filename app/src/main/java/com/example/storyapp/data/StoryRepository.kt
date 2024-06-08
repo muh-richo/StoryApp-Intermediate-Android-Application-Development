@@ -10,6 +10,7 @@ import com.example.storyapp.data.remote.Result
 import com.example.storyapp.data.remote.response.*
 import com.example.storyapp.data.remote.retrofit.ApiService
 import com.google.gson.Gson
+import kotlinx.coroutines.flow.Flow
 import okhttp3.*
 import retrofit2.HttpException
 
@@ -53,8 +54,8 @@ class StoryRepository(
             }
         }
 
-    fun getStories(token: String): LiveData<PagingData<ListStoryItem>> {
-        @OptIn(ExperimentalPagingApi::class)
+    @OptIn(ExperimentalPagingApi::class)
+    fun getStories(token: String): Flow<PagingData<ListStoryItem>> {
         return Pager(
             config = PagingConfig(
                 pageSize = 5
@@ -63,7 +64,7 @@ class StoryRepository(
             pagingSourceFactory = {
                 storyDatabase.storyDao().getAllStory()
             }
-        ).liveData
+        ).flow
     }
 
     fun getStoriesWithLocation(token: String, location: Int): LiveData<Result<StoryResponse>> =
