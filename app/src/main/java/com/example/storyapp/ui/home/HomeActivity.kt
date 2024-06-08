@@ -1,17 +1,18 @@
 package com.example.storyapp.ui.home
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.provider.Settings
 import android.view.View
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.storyapp.R
 import com.example.storyapp.adapter.StoryAdapter
@@ -24,7 +25,6 @@ import com.example.storyapp.ui.addstory.AddStoryActivity
 import com.example.storyapp.ui.detail.DetailStoryActivity
 import com.example.storyapp.ui.login.LoginActivity
 import com.example.storyapp.ui.maps.MapsActivity
-import kotlinx.coroutines.launch
 
 class HomeActivity : AppCompatActivity() {
 
@@ -36,6 +36,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var userModel: User
     private lateinit var userPreferences: UserPreferences
 
+    private lateinit var adapter: StoryAdapter
     private var recyclerViewState: Parcelable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,17 +79,13 @@ class HomeActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(this)
         binding.rvStory.layoutManager = layoutManager
 
-        val adapter = StoryAdapter()
+        adapter = StoryAdapter()
         binding.rvStory.adapter = adapter
 
-        lifecycleScope.launch {
-            viewModel.storyPagingData.observe(this@HomeActivity) { pagingData ->
-                binding.progressBar.visibility = View.GONE
-                adapter.submitData(lifecycle, pagingData)
-            }
+        viewModel.getStory("Bearer ${userModel.token}").observe(this) { result ->
+            binding.progressBar.visibility = View.GONE
+            adapter.submitData(lifecycle, result)
         }
-
-        viewModel.getStory("Bearer ${userModel.token}")
 
         adapter.setOnItemClickCallBack(object: StoryAdapter.OnItemClickCallBack {
             override fun onItemClicked(data: ListStoryItem) {
@@ -98,11 +95,12 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun showSelectedStory(data: ListStoryItem) {
-        val moveWithParcelableIntent = Intent(this, DetailStoryActivity::class.java)
-        moveWithParcelableIntent.putExtra(DetailStoryActivity.EXTRA_STORY_NAME, data.name)
-        moveWithParcelableIntent.putExtra(DetailStoryActivity.EXTRA_STORY_IMAGE, data.photoUrl)
-        moveWithParcelableIntent.putExtra(DetailStoryActivity.EXTRA_STORY_CREATED_AT, data.createdAt)
-        moveWithParcelableIntent.putExtra(DetailStoryActivity.EXTRA_STORY_DESCRIPTION, data.description)
+        val moveWithParcelableIntent = Intent(this, DetailStoryActivity::class.java).apply {
+            putExtra(DetailStoryActivity.EXTRA_STORY_NAME, data.name)
+            putExtra(DetailStoryActivity.EXTRA_STORY_IMAGE, data.photoUrl)
+            putExtra(DetailStoryActivity.EXTRA_STORY_CREATED_AT, data.createdAt)
+            putExtra(DetailStoryActivity.EXTRA_STORY_DESCRIPTION, data.description)
+        }
         startActivity(moveWithParcelableIntent)
     }
 
@@ -139,7 +137,16 @@ class HomeActivity : AppCompatActivity() {
 
     private fun addStory() {
         val intent = Intent(this, AddStoryActivity::class.java)
-        startActivity(intent)
+        addStoryResultLauncher.launch(intent)
+    }
+
+    private val addStoryResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            adapter.refresh()
+            binding.rvStory.scrollToPosition(0)
+        }
     }
 
     override fun onBackPressed() {

@@ -9,6 +9,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.recyclerview.widget.ListUpdateCallback
 import com.example.storyapp.MainDispatcherRule
+import com.example.storyapp.adapter.StoryAdapter
 import com.example.storyapp.data.DataDummy
 import com.example.storyapp.data.StoryRepository
 import com.example.storyapp.data.remote.response.ListStoryItem
@@ -22,12 +23,12 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito
+import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 
 @ExperimentalCoroutinesApi
 @RunWith(MockitoJUnitRunner::class)
-class MainViewModelTest{
+class HomeViewModelTest {
     @get:Rule
     val instantExecutorRule = InstantTaskExecutorRule()
 
@@ -48,7 +49,7 @@ class MainViewModelTest{
         val data: PagingData<ListStoryItem> = StoryPagingSource.snapShot(dummyStory)
         val expectedStory = MutableLiveData<PagingData<ListStoryItem>>()
         expectedStory.value = data
-        Mockito.`when`(storyRepository.getStories(TOKEN)).thenReturn(expectedStory)
+        `when`(storyRepository.getStories(TOKEN)).thenReturn(expectedStory)
 
         val actualStory: PagingData<ListStoryItem> = homeViewModel.getStory(TOKEN).getOrAwaitValue()
 
@@ -69,7 +70,7 @@ class MainViewModelTest{
         val data: PagingData<ListStoryItem> = PagingData.from(emptyList())
         val expectedStory = MutableLiveData<PagingData<ListStoryItem>>()
         expectedStory.value = data
-        Mockito.`when`(homeViewModel.getStory(TOKEN)).thenReturn(expectedStory)
+        `when`(homeViewModel.getStory(TOKEN)).thenReturn(expectedStory)
 
         val actualStory: PagingData<ListStoryItem> = homeViewModel.getStory(TOKEN).getOrAwaitValue()
 

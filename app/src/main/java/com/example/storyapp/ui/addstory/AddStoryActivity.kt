@@ -1,6 +1,7 @@
 package com.example.storyapp.ui.addstory
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
@@ -148,6 +149,7 @@ class AddStoryActivity : AppCompatActivity() {
                                     showToast(R.string.upload_success)
 
                                     if (result.data.error == false) {
+                                        setResult(Activity.RESULT_OK)
                                         finish()
                                     }
                                 }
